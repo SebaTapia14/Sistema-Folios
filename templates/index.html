@@ -6,43 +6,6 @@
     <title>Iniciar Sesión - Sistema de Folios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css"> <!-- Estilos personalizados -->
-    <style>
-        body {
-            background-color: #f5f7fa;
-            font-family: Arial, sans-serif;
-        }
-        .login-container {
-            max-width: 400px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            text-align: center;
-        }
-        .login-header {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #4a5568;
-            margin-bottom: 1rem;
-        }
-        .form-label {
-            font-weight: bold;
-            color: #4a5568;
-        }
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-        .login-footer {
-            font-size: 0.9rem;
-            color: #4a5568;
-            margin-top: 1rem;
-        }
-    </style>
 </head>
 <body>
     <div class="d-flex justify-content-center align-items-center vh-100">
@@ -52,6 +15,7 @@
             
             <h2 class="login-header">Iniciar Sesión</h2>
             
+            <!-- Formulario de inicio de sesión -->
             <form id="loginForm">
                 <div class="mb-3">
                     <label for="username" class="form-label">Usuario</label>
@@ -67,23 +31,31 @@
             <!-- Mensaje de error de inicio de sesión -->
             <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
 
-            <!-- Modal para restablecer contraseña -->
-            <div id="forgotPasswordModal" class="modal hidden">
-                <div class="modal-content">
-                    <span id="closeForgotPasswordModal" class="close-button">&times;</span>
-                    <h3>Restablecer contraseña</h3>
-                    <form id="forgotPasswordForm">
-                        <label for="email">Correo electrónico:</label>
-                        <input type="email" id="email" name="email" placeholder="Ingresa tu correo" required>
-                        <button type="submit" class="btn">Enviar enlace de restablecimiento</button>
-                    </form>
-                </div>
+            <!-- Enlace para recuperar contraseña -->
+            <div class="login-footer">
+                <p>¿Olvidaste tu contraseña? <a href="#" id="forgotPasswordLink">Recupérala aquí</a></p>
             </div>
         </div>
     </div>
+
+    <!-- Modal para recuperar contraseña -->
+    <div id="forgotPasswordModal" class="modal hidden">
+        <div class="modal-content">
+            <span id="closeForgotPasswordModal" class="close-button">&times;</span>
+            <h3>Recuperar contraseña</h3>
+            <form id="forgotPasswordForm">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo electrónico:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Ingresa tu correo" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Enviar enlace de recuperación</button>
+            </form>
+        </div>
+    </div>
     
-    <!-- Integración de Bootstrap JavaScript desde CDN -->
+    <!-- Bootstrap JavaScript y lógica personalizada -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script> <!-- Lógica de inicio de sesión -->
+    <script src="js/index.js"></script> <!-- Lógica del modal para recuperar contraseña -->
 </body>
 </html>

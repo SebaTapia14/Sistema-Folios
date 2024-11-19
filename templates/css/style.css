@@ -1,57 +1,163 @@
+/* General Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f4f4f9;
+    background: linear-gradient(135deg, #6c63ff, #4e9fff);
+    color: #333;
 }
 
 .login-container {
-    width: 300px;
-    padding: 20px;
-    border-radius: 5px;
+    width: 350px;
+    padding: 20px 30px;
+    border-radius: 8px;
     background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
     text-align: center;
 }
 
-h1 {
+h1, h2 {
     font-size: 24px;
-    color: #333333;
+    font-weight: bold;
+    color: #4a4a4a;
+    margin-bottom: 20px;
 }
 
 label {
     display: block;
     margin-top: 10px;
+    font-size: 14px;
+    color: #555555;
     text-align: left;
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+input[type="email"] {
     width: 100%;
-    padding: 8px;
-    margin: 5px 0 15px;
+    padding: 10px;
+    margin: 8px 0 15px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: #007bff;
+    outline: none;
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background-color: #007bff;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
     color: #ffffff;
+    background-color: #007bff;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
     background-color: #0056b3;
 }
 
-.error-message {
-    color: red;
+.login-footer {
+    margin-top: 15px;
     font-size: 14px;
+    color: #555;
+}
+
+.login-footer a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: scaleUp 0.3s ease-in-out;
+}
+
+.modal h3 {
+    margin: 10px 0 20px;
+    font-size: 20px;
+    color: #333;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: #007bff;
+}
+
+/* Hidden Class for Modals */
+.hidden {
+    display: none;
+}
+
+/* Error Message */
+.error-message {
+    color: #e63946;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.9);
+    }
+    to {
+        transform: scale(1);
+    }
 }

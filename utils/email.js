@@ -1,34 +1,37 @@
+// email.js
+require('dotenv').config();
 const nodemailer = require('nodemailer');
 
+// Crear transporte para SSL
 const transporter = nodemailer.createTransport({
-    host: "smtp.office365.com", // Servidor SMTP de Outlook/Office365
-    port: 587, // Puerto para TLS
-    secure: false, // TLS requiere secure=false
+    host: process.env.EMAIL_HOST, // Por ejemplo: smtp.office365.com
+    port: 465, // Puerto estándar para SSL
+    secure: true, // Habilitar SSL
     auth: {
-        user: process.env.EMAIL_USER, // Tu correo del dominio
-        pass: process.env.EMAIL_PASS, // Contraseña o App Password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
 
-async function sendPasswordResetEmail(email, link) {
+// Probar conexión y enviar correo
+(async () => {
     try {
-        await transporter.sendMail({
-            from: `"Sistema Folios" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'Restablecimiento de contraseña',
-            html: `
-                <p>Hola,</p>
-                <p>Hemos recibido una solicitud para restablecer tu contraseña. Si fuiste tú, haz clic en el siguiente enlace:</p>
-                <a href="${link}" target="_blank">Restablecer Contraseña</a>
-                <p>Si no solicitaste este cambio, ignora este mensaje.</p>
-                <p>Gracias,<br>El equipo de Sistema Folios</p>
-            `,
-        });
-        console.log(`Correo enviado a: ${email}`);
-    } catch (error) {
-        console.error(`Error al enviar correo: ${error.message}`);
-        throw new Error('No se pudo enviar el correo.');
-    }
-}
+        // Probar conexión al servidor
+        await transporter.verify();
+        console.log('Conexión exitosa con SSL');
 
-module.exports = { sendPasswordResetEmail };
+        // Opciones del correo
+        const mailOptions = {
+            from: process.env.EMAIL_FROM, // EMAIL_FROM definido en el .env
+            to: 'destinatario@ejemplo.com', // Cambia por un correo válido para pruebas
+            subject: 'Prueba de correo con SSL',
+            text: 'Este es un correo de prueba utilizando SSL.',
+        };
+
+        // Enviar el correo
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Correo enviado:', info.messageId);
+    } catch (error) {
+        console.error('Error al enviar el correo:', error.message);
+    }
+})();

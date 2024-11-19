@@ -4,18 +4,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeForgotPasswordModal = document.getElementById("closeForgotPasswordModal");
     const forgotPasswordForm = document.getElementById("forgotPasswordForm");
 
-    // Mostrar el modal
+    // Mostrar el modal al hacer clic en "Recupérala aquí"
     forgotPasswordLink.addEventListener("click", (e) => {
         e.preventDefault();
-        forgotPasswordModal.classList.remove("hidden");
+        forgotPasswordModal.style.display = "block"; // Mostrar modal
     });
 
-    // Cerrar el modal
+    // Cerrar modal al hacer clic en el botón de cerrar
     closeForgotPasswordModal.addEventListener("click", () => {
-        forgotPasswordModal.classList.add("hidden");
+        forgotPasswordModal.style.display = "none"; // Ocultar modal
     });
 
-    // Enviar solicitud de restablecimiento de contraseña
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener("click", (event) => {
+        if (event.target === forgotPasswordModal) {
+            forgotPasswordModal.style.display = "none";
+        }
+    });
+
+    // Manejo del formulario de recuperación de contraseña
     forgotPasswordForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("email").value.trim();
@@ -29,10 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
             if (response.ok) {
-                alert("Enlace de restablecimiento enviado a tu correo.");
-                forgotPasswordModal.classList.add("hidden");
+                alert("Enlace de recuperación enviado a tu correo.");
+                forgotPasswordModal.style.display = "none"; // Ocultar modal tras éxito
             } else {
-                alert(result.message || "Error al enviar el correo.");
+                alert(result.message || "Error al enviar el correo de recuperación.");
             }
         } catch (error) {
             alert("Error de conexión con el servidor.");
