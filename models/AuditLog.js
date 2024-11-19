@@ -1,28 +1,40 @@
+// models/AuditLog.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const User = require('./User'); // Modelo de usuario para asociación
+const Folio = require('./Folio'); // Modelo de folio para asociación
 
 const AuditLog = sequelize.define('AuditLog', {
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: false
     },
     action: {
         type: DataTypes.STRING,
-        allowNull: false, // Ejemplo: 'create', 'update'
+        allowNull: false
     },
     folioId: {
         type: DataTypes.INTEGER,
-        allowNull: true, // Puede ser nulo si la acción no afecta un folio específico
+        allowNull: true // Asegúrate de que sea NULLABLE
     },
     details: {
         type: DataTypes.TEXT,
-        allowNull: true, // Almacena información adicional sobre la acción
+        allowNull: true
     },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: DataTypes.NOW,
-    },
+        defaultValue: DataTypes.NOW
+    }
+}, {
+    tableName: 'auditlogs',
+    timestamps: false
 });
+
+
+// Asociaciones
+AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+AuditLog.belongsTo(Folio, { foreignKey: 'folioId', as: 'folio' });
 
 module.exports = AuditLog;

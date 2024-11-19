@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oficina de Parte Municipal - Gestión de Folios</title>
+    <link rel="stylesheet" href="css/municipalFolios.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Encabezado de la página -->
+        <div class="d-flex justify-content-between align-items-center mb-4 header-actions">
+            <h2>Oficina de Parte Municipal - Gestión de Folios</h2>
+            <div class="button-group">
+                <button id="backButton" class="back-btn">Volver</button>
+                <button id="logoutButton" class="logout-btn">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <!-- Formulario para crear un nuevo folio -->
+        <div class="form-section">
+            <h3>Crear Nuevo Folio</h3>
+            <form id="folioForm">
+                <!-- Selección de Dirección -->
+                <div class="form-group">
+                    <label for="direction">Dirección</label>
+                    <select id="direction" class="form-control" required aria-label="Seleccione una dirección">
+                        <option value="" disabled selected>Seleccione una dirección</option>
+                        <!-- Opciones cargadas dinámicamente -->
+                    </select>
+                </div>
+
+                <!-- Selección de Tipo de Documento -->
+                <div class="form-group">
+                    <label for="type">Tipo de Documento</label>
+                    <select id="type" class="form-control" required aria-label="Seleccione un tipo de documento">
+                        <option value="" disabled selected>Seleccione un tipo de documento</option>
+                        <!-- Opciones cargadas dinámicamente -->
+                    </select>
+                </div>
+
+                <!-- Campos adicionales del formulario -->
+                <div class="form-group">
+                    <label for="topic">Tema</label>
+                    <input type="text" id="topic" class="form-control" required aria-label="Tema del documento">
+                </div>
+                <div class="form-group">
+                    <label for="description">Descripción</label>
+                    <textarea id="description" class="form-control" rows="3" aria-label="Descripción del documento"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="observations">Observaciones (opcional)</label>
+                    <textarea id="observations" class="form-control" rows="2" aria-label="Observaciones"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-submit">Crear Folio</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla para visualizar los folios -->
+        <div class="table-section">
+            <h3>Lista de Folios</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Número de Folio</th>
+                        <th>Dirección</th>
+                        <th>Tipo de Documento</th>
+                        <th>Tema</th>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody id="folioTableBody">
+                    <!-- Aquí se insertarán los folios generados -->
+                </tbody>
+            </table>
+            <!-- Controles de paginación -->
+            <div id="paginationControls" class="pagination-controls">
+                <!-- Aquí se insertarán los botones de paginación -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar descripción completa -->
+    <div id="descriptionModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close-button">&times;</span>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
+    <script src="js/municipalFolios.js"></script>
+</body>
+</html>

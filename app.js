@@ -1,70 +1,86 @@
-require('dotenv').config(); // Carga las variables de entorno
+// app.js
+
+require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const sequelize = require('./config/database'); // Configuración de la base de datos
+const { sequelize } = require('./models'); // Importa sequelize desde models/index.js
 
-// Importaciones de Modelos
-const User = require('./models/User');
-const Direction = require('./models/Direction');
-const Department = require('./models/Department');
-const DocumentType = require('./models/DocumentType');
-const Folio = require('./models/Folio');
-const RefreshToken = require('./models/RefreshToken');
-const AuditLog = require('./models/AuditLog'); // Importa el modelo de auditoría
-
-// Importaciones de Rutas y Middleware
+// Importar Rutas y Middleware
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const auditRoutes = require('./routes/audit');
+const adminRoutes = require('./routes/admin');
 const directionRoutes = require('./routes/directions');
 const departmentRoutes = require('./routes/departments');
 const documentTypeRoutes = require('./routes/documentTypes');
 const folioRoutes = require('./routes/folios');
-const auditRoutes = require('./routes/audit'); // Importa las rutas de auditoría
-const { authMiddleware } = require('./middlewares/authMiddleware'); // Middleware de autenticación
+const municipalFoliosRoutes = require('./routes/municipalFolios');
+const directionalFoliosRoutes = require('./routes/directionalFolios');
+const utilityRoutes = require('./routes/utilityRoutes'); // Nueva ruta para direcciones y tipos de documentos
 
-app.use(express.json()); // Middleware para manejar JSON en solicitudes
+// Configuración de CORS
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGIN : '*',
+    optionsSuccessStatus: 200,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
 
-// Ruta de prueba
-app.get('/', (req, res) => {
-    res.send('¡Servidor de Sistema de Folios funcionando!');
-});
+app.use(cors(corsOptions));
+app.use(express.json());
 
-// Probar la conexión a la base de datos y sincronizar los modelos
-sequelize.authenticate()
-    .then(() => {
+// Ruta básica de prueba para el servidor
+app.get('/', (req, res) => res.send('¡Servidor de Sistema de Folios funcionando!'));
+
+// Conectar y sincronizar la base de datos
+(async () => {
+    try {
+        await sequelize.authenticate();
         console.log('Conectado a la base de datos MySQL');
         
-        // Sincronizar todos los modelos, incluyendo AuditLog
-        sequelize.sync({ force: true }) // Cambia a `force: false` en producción
-            .then(() => {
-                console.log("Tablas sincronizadas en MySQL");
-            })
-            .catch(err => console.log("Error al sincronizar tablas:", err));
-    })
-    .catch(err => {
-        console.error('Error de conexión a la base de datos:', err);
-    });
+        // Sincronizar solo en desarrollo o en caso de configuración inicial de base de datos
+        if (process.env.NODE_ENV === 'development') {
+            await sequelize.sync({ alter: true });
+            console.log('Tablas sincronizadas en desarrollo con alteraciones.');
+        } else {
+            await sequelize.sync(); // Sin alteraciones en producción
+            console.log('Tablas sincronizadas en producción sin alteraciones.');
+        }
+    } catch (error) {
+        console.error('Error al conectar o sincronizar la base de datos:', error);
+    }
+})();
 
-// Rutas de autenticación (registro, inicio de sesión, etc.)
+// Configuración de Rutas
 app.use('/auth', authRoutes);
-
-// Rutas de gestión de usuarios, direcciones, departamentos, tipos de documentos y folios
+app.use('/admin', adminRoutes);
 app.use('/users', userRoutes);
 app.use('/directions', directionRoutes);
 app.use('/departments', departmentRoutes);
-app.use('/document-types', documentTypeRoutes);
+app.use('/documenttypes', documentTypeRoutes);
 app.use('/folios', folioRoutes);
+app.use('/municipal', municipalFoliosRoutes);
+app.use('/directional', directionalFoliosRoutes);
+app.use('/audit', auditRoutes);
+app.use('/api/util', utilityRoutes); // Nueva ruta para obtener direcciones y tipos de documentos
 
-// Ruta de auditoría para consultar el historial de acciones
-app.use('/audit', auditRoutes); // Agrega las rutas de auditoría
-
-// Ejemplo de una ruta protegida para verificar autenticación
-app.get('/protected', authMiddleware, (req, res) => {
-    res.send('Esta es una ruta protegida.');
+// Manejo de rutas no encontradas
+app.use((req, res) => {
+    res.status(404).json({ message: 'Ruta no encontrada. Verifique la URL o consulte la documentación.' });
 });
 
-// Iniciar el servidor
+// Manejo global de errores
+app.use((err, req, res, next) => {
+    console.error('Error en el servidor:', err);
+    res.status(process.env.NODE_ENV === 'production' ? 500 : 500).json({
+        message: process.env.NODE_ENV === 'production' 
+            ? 'Ha ocurrido un error en el servidor. Intente de nuevo más tarde.' 
+            : `Error en el servidor: ${err.message}`,
+        ...(process.env.NODE_ENV === 'development' ? { error: err } : {})
+    });
+});
+
+// Iniciar el servidor en el puerto especificado
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor corriendo en http://localhost:${PORT}`));

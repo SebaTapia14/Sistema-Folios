@@ -1,0 +1,221 @@
+/* view_directionFolios.css */
+
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal */
+.container {
+    width: 90%;
+    max-width: 1600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Encabezado y botón de volver */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+    margin-bottom: 0;
+}
+
+.header-buttons {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.back-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Título de la sección */
+h3 {
+    color: #333;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* Tabla de folios */
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background-color: #007bff;
+    color: white;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table th {
+    font-weight: bold;
+}
+
+.table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Evitar que el texto se divida en varias líneas en las columnas especificadas */
+.table td:nth-child(1), /* Número de Folio */
+.table td:nth-child(3), /* Tipo de Documento */
+.table td:nth-child(4), /* Tema */
+.table td:nth-child(5)  /* Fecha */ {
+    white-space: nowrap;
+}
+
+/* Ajustar ancho de Descripción y Observaciones para mostrar más texto */
+.table td:nth-child(7) { /* Descripción */
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table td:nth-child(8) { /* Observaciones */
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+    color: #555;
+}
+
+/* Estilos del botón de expansión */
+.expand-icon {
+    font-size: 12px;
+    color: #007bff;
+    cursor: pointer;
+    margin-left: 5px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.expand-icon:hover {
+    color: #0056b3;
+}
+
+/* Controles de paginación */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.pagination-controls button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover {
+    background-color: #0056b3;
+}
+
+.pagination-controls .active {
+    background-color: #0056b3;
+    cursor: default;
+}
+
+#pageInfo {
+    padding-top: 8px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro translúcido */
+    overflow: auto;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Mayor sombra */
+}
+
+.close-button {
+    color: #333;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: -10px;
+}
+
+.close-button:hover {
+    color: #007bff;
+}
+
+/* Ajustes para el texto en el modal */
+#modalText {
+    font-size: 16px;
+    color: #333;
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Mantener saltos de línea */
+}
+
+/* Ajustes para que el modal destaque mejor */
+.modal-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

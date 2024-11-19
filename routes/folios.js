@@ -1,100 +1,103 @@
+// routes/folios.js
+
 const express = require('express');
 const router = express.Router();
-const Folio = require('../models/Folio');
-const AuditLog = require('../models/AuditLog');
-const { authMiddleware, checkRole } = require('../middlewares/authMiddleware'); // Desestructuramos ambas funciones
+const FolioModel = require('../models/Folio');
+const User = require('../models/User');
+const DocumentType = require('../models/DocumentType');
+const Direction = require('../models/Direction');
+const Department = require('../models/Department');
+const { authMiddleware, checkRole } = require('../middlewares/authMiddleware');
+const { logAudit } = require('../utils/auditLogger'); // Importar logAudit
 const { Op } = require('sequelize');
-const sequelize = require('../config/database'); // Configuración de la base de datos para transacciones
 
-// Función para generar el número correlativo
-async function generateCorrelativeNumber({ directionId, departmentId, typeId, scope }) {
-    const year = new Date().getFullYear();
-
-    console.log("Iniciando transacción para generar número correlativo...");
-    const transaction = await sequelize.transaction();
+// Ruta para listar todos los folios con paginación (accesible para roles especificados)
+router.get('/', authMiddleware, checkRole(['admin', 'oficina de partes municipal', 'oficina de partes direccion']), async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
 
     try {
-        // Buscar el último folio para la combinación especificada en el año actual
-        const lastFolio = await Folio.findOne({
-            where: { directionId, departmentId, typeId, scope, year },
-            order: [['correlativo', 'DESC']],
-            transaction
+        const { rows: folios, count } = await FolioModel.findAndCountAll({
+            include: [
+                { model: User, as: 'folioUser', attributes: ['username'] },
+                { model: DocumentType, as: 'folioDocumentType', attributes: ['name'] },
+                { model: Direction, as: 'folioDirection', attributes: ['name'] },
+                { model: Department, as: 'folioDepartment', attributes: ['name'] }
+            ],
+            offset: parseInt(offset),
+            limit: parseInt(limit),
+            order: [['createdAt', 'DESC']]
         });
 
-        console.log("Último folio encontrado:", lastFolio);
-
-        // Calcular el correlativo
-        const correlativo = lastFolio ? lastFolio.correlativo + 1 : 1;
-        const folioNumber = `${directionId}/${year}-${correlativo}`;
-
-        await transaction.commit();
-        console.log("Número correlativo generado:", folioNumber);
-
-        return { correlativo, folioNumber, year };
-    } catch (error) {
-        await transaction.rollback();
-        console.error('Error en generateCorrelativeNumber:', error);
-        throw new Error('Error al generar el número correlativo');
-    }
-}
-
-// Crear un nuevo folio (solo para funcionarias y secretarias)
-router.post('/create', authMiddleware, checkRole(['admin', 'funcionaria', 'secretaria']), async (req, res) => {
-    const { directionId, departmentId, typeId, scope, topic, description } = req.body;
-    const userId = req.userId;
-    const role = req.userRole;
-
-    try {
-        const { correlativo, folioNumber, year } = await generateCorrelativeNumber({
-            directionId,
-            departmentId,
-            typeId,
-            scope
+        res.json({
+            success: true,
+            folios,
+            totalPages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
         });
-
-        const folio = await Folio.create({
-            directionId,
-            departmentId,
-            typeId,
-            scope,
-            roleAssigned: role,
-            correlativo,
-            folioNumber,
-            year,
-            topic,
-            description
-        });
-
-        await AuditLog.create({
-            userId,
-            action: 'create',
-            folioId: folio.id,
-            details: `Folio creado con el número ${folioNumber}`
-        });
-
-        res.status(201).json({ message: 'Folio creado', folio });
-    } catch (error) {
-        console.error('Error al crear folio:', error);
-        res.status(500).json({ message: 'Error al crear folio', error: error.message });
-    }
-});
-
-// Listar todos los folios (solo para administradores)
-router.get('/', authMiddleware, checkRole(['admin']), async (req, res) => {
-    try {
-        const folios = await Folio.findAll();
-        res.json(folios);
     } catch (error) {
         console.error('Error al obtener folios:', error);
-        res.status(500).json({ message: 'Error al obtener folios', error });
+        res.status(500).json({ message: 'Error al obtener folios', error: error.message });
     }
 });
 
-// Filtrar folios por criterios específicos (solo para administradores)
-router.get('/filter', authMiddleware, checkRole(['admin']), async (req, res) => {
-    const { directionId, departmentId, typeId, startDate, endDate } = req.query;
+// Ruta para buscar y filtrar folios con paginación y búsqueda (por número de folio, usuario o tipo de documento)
+router.get('/search', authMiddleware, checkRole(['admin', 'oficina de partes municipal', 'oficina de partes direccion']), async (req, res) => {
+    const { search = '', page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
 
+    try {
+        // Buscar folios con sus relaciones
+        const { rows: folios, count } = await FolioModel.findAndCountAll({
+            where: {
+                [Op.or]: [
+                    { folioNumber: { [Op.like]: `%${search}%` } }, // Filtrar por número de folio
+                ]
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'folioUser', // Relación con el modelo User
+                    attributes: ['username'], // Obtener solo el nombre de usuario
+                    required: false, // No forzar que todos los folios tengan un usuario
+                },
+                {
+                    model: DocumentType,
+                    as: 'folioDocumentType', // Relación con el modelo DocumentType
+                    attributes: ['name'], // Obtener solo el nombre del tipo de documento
+                    required: false,
+                },
+                {
+                    model: Direction,
+                    as: 'folioDirection', // Relación con el modelo Direction
+                    attributes: ['name'], // Obtener el nombre de la dirección
+                    required: false,
+                },
+            ],
+            offset: parseInt(offset),
+            limit: parseInt(limit),
+            order: [['createdAt', 'DESC']], // Ordenar por fecha de creación descendente
+        });
+
+        // Respuesta con los datos y la paginación
+        res.json({
+            success: true,
+            folios,
+            totalPages: Math.ceil(count / limit),
+            currentPage: parseInt(page),
+        });
+    } catch (error) {
+        console.error('Error al buscar folios:', error);
+        res.status(500).json({ success: false, message: 'Error al buscar folios' });
+    }
+});
+
+
+// Ruta para filtrar folios según criterios específicos (dirección, departamento, tipo de documento, rango de fechas)
+router.get('/filter', authMiddleware, checkRole(['admin', 'oficina de partes municipal', 'oficina de partes direccion']), async (req, res) => {
+    const { directionId, departmentId, typeId, startDate, endDate } = req.query;
     const whereClause = {};
+
     if (directionId) whereClause.directionId = directionId;
     if (departmentId) whereClause.departmentId = departmentId;
     if (typeId) whereClause.typeId = typeId;
@@ -105,72 +108,90 @@ router.get('/filter', authMiddleware, checkRole(['admin']), async (req, res) => 
     }
 
     try {
-        const filteredFolios = await Folio.findAll({ where: whereClause });
-        res.json(filteredFolios);
+        const filteredFolios = await FolioModel.findAll({
+            where: whereClause,
+            include: [
+                { model: User, as: 'folioUser', attributes: ['username'] },
+                { model: DocumentType, as: 'folioDocumentType', attributes: ['name'] },
+                { model: Direction, as: 'folioDirection', attributes: ['name'] },
+                { model: Department, as: 'folioDepartment', attributes: ['name'] }
+            ]
+        });
+        res.json({ success: true, folios: filteredFolios });
     } catch (error) {
         console.error('Error al filtrar folios:', error);
         res.status(500).json({ message: 'Error al filtrar folios', error });
     }
 });
 
-// Actualizar un folio (solo para administradores)
-router.put('/:id', authMiddleware, checkRole(['admin']), async (req, res) => {
+// Ruta para obtener detalles de un folio específico
+router.get('/:id', authMiddleware, checkRole(['admin', 'oficina de partes municipal', 'oficina de partes direccion']), async (req, res) => {
     const { id } = req.params;
-    const { directionId, departmentId, typeId, scope, topic, description } = req.body;
-    const userId = req.userId;
-
     try {
-        const folio = await Folio.findByPk(id);
+        const folio = await FolioModel.findByPk(id, {
+            include: [
+                { model: User, as: 'folioUser', attributes: ['username'] },
+                { model: DocumentType, as: 'folioDocumentType', attributes: ['name'] },
+                { model: Direction, as: 'folioDirection', attributes: ['name'] },
+                { model: Department, as: 'folioDepartment', attributes: ['name'] }
+            ],
+        });
         if (!folio) {
             return res.status(404).json({ message: 'Folio no encontrado' });
         }
 
-        await folio.update({
-            directionId,
-            departmentId,
-            typeId,
-            scope,
-            topic,
-            description
-        });
+        // Registrar en auditoría
+        await logAudit(req.userId, 'Acceso a Folio', `Accedió a los detalles del folio ${folio.folioNumber}`, folio.id);
 
-        await AuditLog.create({
-            userId,
-            action: 'update',
-            folioId: folio.id,
-            details: `Folio actualizado con nuevos datos`
-        });
-
-        res.json({ message: 'Folio actualizado', folio });
+        res.json({ success: true, folio });
     } catch (error) {
-        console.error('Error al actualizar folio:', error);
-        res.status(500).json({ message: 'Error al actualizar folio', error: error.message });
+        console.error('Error al obtener detalles del folio:', error);
+        res.status(500).json({ message: 'Error al obtener detalles del folio', error });
     }
 });
 
-// Eliminar un folio (solo para administradores)
+// Ruta para eliminar un folio específico
 router.delete('/:id', authMiddleware, checkRole(['admin']), async (req, res) => {
     const { id } = req.params;
-
     try {
-        const folio = await Folio.findByPk(id);
+        const folio = await FolioModel.findByPk(id); // Asegúrate de usar el nombre correcto del modelo
         if (!folio) {
-            return res.status(404).json({ message: 'Folio no encontrado' });
+            return res.status(404).json({ success: false, message: 'Folio no encontrado' });
         }
 
         await folio.destroy();
-        res.json({ message: 'Folio eliminado' });
-
-        await AuditLog.create({
-            userId: req.userId,
-            action: 'delete',
-            folioId: id,
-            details: `Folio eliminado con ID ${id}`
-        });
+        res.json({ success: true, message: 'Folio eliminado correctamente' });
     } catch (error) {
-        console.error('Error al eliminar folio:', error);
-        res.status(500).json({ message: 'Error al eliminar folio', error: error.message });
+        console.error('Error al eliminar el folio:', error); // Esto imprime más información del error
+        res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
     }
 });
+
+
+// Actualizar un folio específico
+router.put('/:id', authMiddleware, checkRole(['admin']), async (req, res) => {
+    const { id } = req.params;
+    const { directionId, departmentId, topic, description } = req.body;
+
+    try {
+        const folio = await Folio.findByPk(id);
+        if (!folio) {
+            return res.status(404).json({ success: false, message: 'Folio no encontrado' });
+        }
+
+        // Actualizar los campos
+        folio.directionId = directionId;
+        folio.departmentId = departmentId;
+        folio.topic = topic;
+        folio.description = description;
+
+        await folio.save();
+        res.json({ success: true, message: 'Folio actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar el folio:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+});
+
 
 module.exports = router;

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin_dashboard.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Encabezado del Panel de Administrador -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Panel de Administrador</h2>
+            <button id="logoutButton" class="btn btn-danger logout-btn">Cerrar Sesión</button>
+        </div>
+
+        <div class="row">
+            <!-- Gestión de Usuarios -->
+            <div class="col-lg-6 user-management mb-4">
+                <h3>Gestión de Usuarios</h3>
+                <form id="userForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Usuario</label>
+                        <input type="text" id="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Contraseña</label>
+                        <input type="password" id="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Rol</label>
+                        <select id="role" class="form-select" onchange="toggleDirectionField()">
+                            <option value="admin">Administrador</option>
+                            <option value="oficina de partes municipal">Oficina de Partes Municipal</option>
+                            <option value="oficina de partes direccion">Oficina de Partes Dirección</option>                            
+                        </select>
+                    </div>
+                    <div class="mb-3" id="directionField" style="display: none;">
+                        <label for="direction" class="form-label">Dirección</label>
+                        <select id="direction" class="form-select">
+                            <option value="" disabled selected>Seleccione una dirección</option>
+                            <option value="DGA">Dirección Gestión Administrativa (DGA)</option>
+                            <option value="ADM">Dirección de Administración Municipal (ADM)</option>
+                            <option value="DCTRL">Dirección de Control (DCTRL)</option>
+                            <option value="DIDECO">Dirección de Desarrollo Comunitario (DIDECO)</option>
+                            <option value="DIDEL">Dirección Desarrollo Económico Local (DIDEL)</option>
+                            <option value="DAF">Dirección de Administración y Finanzas (DAF)</option>
+                            <option value="DOM">Dirección de Obras Municipales (DOM)</option>
+                            <option value="DSC">Dirección de Seguridad Comunitaria (DSC)</option>
+                            <option value="DTT">Dirección de Tránsito y Transporte Público (DTT)</option>
+                            <option value="DMAO">Dirección Medio Ambiente Aseo y Ornato (DMAO)</option>
+                            <option value="DJUR">Dirección Jurídica (DJUR)</option>
+                            <option value="DIDESO">Dirección Desarrollo Social (DIDESO)</option>
+                            <option value="SECPLAN">Dirección Secretaría de Planificación Comunal (SECPLAN)</option>
+                            <option value="RENTAS">Dirección de Rentas (RENTAS)</option>
+                            <option value="DGRD">Dirección de Gestión de Riesgos y Desastres (DGRD)</option>
+                            <option value="JPL">Juzgado Policía Local (JPL)</option>
+                            <option value="SECMU">Secretaría Municipal (SECMU)</option>
+                            <option value="ALCL">Alcaldía (ALCL)</option>
+                            <option value="GAB">Gabinete (GAB)</option>
+                            <option value="SM">Secretaría Municipal (SM)</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="submitUserButton" class="btn btn-primary w-100">Crear Usuario</button>
+                </form>
+
+                <!-- Búsqueda de Usuarios -->
+                <div class="search-section mt-4">
+                    <input type="text" id="searchUser" class="form-control" placeholder="Buscar usuario...">
+                    <button onclick="searchUser()" class="btn btn-primary mt-2">Buscar</button>
+                </div>
+
+                <!-- Lista de Usuarios -->
+                <h4 class="mt-4">Lista de Usuarios</h4>
+                <table class="table user-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Rol</th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- Aquí se agregan dinámicamente los usuarios -->
+                    </tbody>
+                </table>
+                <!-- Controles de Paginación para Usuarios -->
+                <div id="userPaginationControls" class="pagination-controls mt-2"></div>
+            </div>
+
+            <!-- Gestión de Folios -->
+            <div class="col-lg-6 folio-management mb-4">
+                <h3>Gestión de Folios</h3>
+                <div class="search-section mb-3">
+                    <input type="text" id="folioSearch" class="form-control" placeholder="Buscar folio por número, usuario o tipo de documento...">
+                    <button onclick="searchFolios()" class="btn btn-primary mt-2">Buscar</button>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Número de Folio</th>
+                            <th>Usuario</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="folioTableBody"></tbody>
+                </table>
+                <div id="folioPaginationControls" class="pagination-controls mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Registro de Auditoría -->
+        <div class="row">
+            <div class="col-lg-12 audit-log">
+                <h3>Registro de Auditoría</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditLogTableBody"></tbody>
+                </table>
+                <div id="auditPaginationControls" class="pagination-controls mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Importación de admin.js -->
+    <script src="js/admin.js"></script>
+</body>
+</html>

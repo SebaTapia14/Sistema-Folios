@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-// Middleware de autenticación: verifica el token y obtiene el rol del usuario
-const authMiddleware = (req, res, next) => {
+// Middleware de autenticación: verifica el token JWT y obtiene el rol del usuario
+const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     
     // Verifica si el header Authorization está presente
@@ -10,7 +10,7 @@ const authMiddleware = (req, res, next) => {
     }
 
     // Extrae el token eliminando la palabra "Bearer " del inicio
-    const token = authHeader.split(' ')[1]; 
+    const token = authHeader.split(' ')[1];
     if (!token) {
         return res.status(403).json({ message: 'Token no proporcionado' });
     }
@@ -20,18 +20,22 @@ const authMiddleware = (req, res, next) => {
         if (err) {
             return res.status(401).json({ message: 'Token inválido' });
         }
-        
-        // Almacena el userId y role del token en el request
+
+        // Almacena userId y role del token en el request
         req.userId = decoded.userId;
         req.userRole = decoded.role;
+
         next();
     });
 };
 
 // Middleware para verificar el rol del usuario
-const checkRole = (roles) => (req, res, next) => {
+const checkRole = (allowedRoles) => (req, res, next) => {
+    console.log("Rol del usuario:", req.userRole); // Debug
+    console.log("Roles permitidos:", allowedRoles); // Debug
+
     // Verifica si el rol del usuario está en la lista de roles permitidos
-    if (!roles.includes(req.userRole)) {
+    if (!allowedRoles.includes(req.userRole)) {
         return res.status(403).json({ message: 'Acceso denegado: rol no autorizado' });
     }
     next();

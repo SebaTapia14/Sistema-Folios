@@ -1,82 +1,58 @@
+// routes/auth.js
+
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const Direction = require('../models/Direction');
+const Department = require('../models/Department'); // Importación correcta del modelo Department
 const RefreshToken = require('../models/RefreshToken');
+const { authMiddleware } = require('../middlewares/authMiddleware'); // Middleware de autenticación
 
-// Función para generar el token de acceso con duración corta
+const PasswordResetToken = require('../models/PasswordResetToken'); // Nuevo modelo
+
+// Función para generar Access Token
 const generateAccessToken = (user) => {
     return jwt.sign(
         { userId: user.id, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: '15m' } // Duración del token de acceso: 15 minutos
+        { expiresIn: '15h' }
     );
 };
 
-// Función para generar el token de actualización con duración larga y guardarlo en la base de datos
+// Función para generar Refresh Token
 const generateRefreshToken = async (user) => {
     const refreshToken = jwt.sign(
         { userId: user.id },
         process.env.JWT_REFRESH_SECRET,
-        { expiresIn: '7d' } // Duración del token de actualización: 7 días
+        { expiresIn: '7d' }
     );
-
-    // Guardar el token de actualización en la base de datos
     await RefreshToken.create({
         token: refreshToken,
         userId: user.id,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Expira en 7 días
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
-
     return refreshToken;
 };
 
-// Ruta para registrar nuevos usuarios (solo para administradores)
-router.post('/register', async (req, res) => {
-    const { username, password, role } = req.body;
-
-    try {
-        // Verificar si el usuario ya existe
-        const existingUser = await User.findOne({ where: { username } });
-        if (existingUser) {
-            return res.status(400).json({ message: 'El nombre de usuario ya está en uso.' });
-        }
-
-        // Encriptar la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Crear el usuario
-        const user = await User.create({
-            username,
-            password: hashedPassword,
-            role
-        });
-        res.status(201).json({ message: 'Usuario creado con éxito', user });
-    } catch (error) {
-        console.error('Error en /register:', error);
-        res.status(400).json({ message: 'Error al crear usuario', error: error.message });
-    }
-});
-
-// Ruta para iniciar sesión y generar ambos tokens
+// Ruta para inicio de sesión
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: 'Nombre de usuario y contraseña requeridos' });
+    }
 
     try {
-        // Buscar el usuario por nombre de usuario
         const user = await User.findOne({ where: { username } });
         if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-        // Verificar la contraseña
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(401).json({ message: 'Contraseña incorrecta' });
 
-        // Generar tokens
         const accessToken = generateAccessToken(user);
         const refreshToken = await generateRefreshToken(user);
 
-        // Enviar los tokens al cliente
         res.json({
             message: 'Inicio de sesión exitoso',
             accessToken,
@@ -88,60 +64,112 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Ruta para renovar el token de acceso usando el token de actualización
-router.post('/refresh', async (req, res) => {
-    const { refreshToken } = req.body;
-
-    // Verificar si el token de actualización se proporcionó en la solicitud
-    if (!refreshToken) {
-        return res.status(403).json({ message: 'Token de actualización no proporcionado' });
-    }
-
+// Nueva ruta para obtener la información de dirección y departamentos del usuario
+router.get('/user-info', authMiddleware, async (req, res) => {
     try {
-        // Verificar el token de actualización
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-
-        // Buscar el token de actualización en la base de datos para asegurarse de que sea válido
-        const storedToken = await RefreshToken.findOne({
-            where: { token: refreshToken, userId: decoded.userId }
+        const user = await User.findByPk(req.userId, {
+            include: [
+                {
+                    model: Direction,
+                    as: 'direction',
+                    attributes: ['id', 'name', 'code'],
+                    include: [
+                        {
+                            model: Department,
+                            as: 'departments',
+                            attributes: ['id', 'name', 'code']
+                        }
+                    ]
+                }
+            ]
         });
 
-        if (!storedToken) {
-            return res.status(403).json({ message: 'Token de actualización inválido o expirado' });
+        if (!user || !user.direction) {
+            console.error("Dirección no encontrada o no tiene acceso.");
+            return res.status(404).json({ message: "Dirección no encontrada o no tiene acceso." });
         }
 
-        // Generar un nuevo token de acceso
-        const user = await User.findByPk(decoded.userId);
-        const newAccessToken = generateAccessToken(user);
-
-        res.json({ accessToken: newAccessToken });
+        res.json({
+            direction: {
+                id: user.direction.id,
+                name: user.direction.name,
+                code: user.direction.code
+            },
+            departments: user.direction.departments || []
+        });
     } catch (error) {
-        console.error('Error en /refresh:', error);
-        res.status(403).json({ message: 'Token de actualización inválido o expirado' });
+        console.error("Error al obtener la información del usuario:", error);
+        res.status(500).json({ message: "Error al obtener la información del usuario" });
     }
 });
 
-// Ruta para cerrar sesión e invalidar el token de actualización
+// Ruta para cerrar sesión (logout)
 router.post('/logout', async (req, res) => {
-    const { refreshToken } = req.body;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-    // Verificar si el token de actualización se proporcionó en la solicitud
-    if (!refreshToken) {
-        return res.status(403).json({ message: 'Token de actualización no proporcionado' });
-    }
+    if (!token) return res.status(403).json({ message: 'Token no proporcionado' });
 
     try {
-        // Eliminar el token de actualización de la base de datos
-        const deletedToken = await RefreshToken.destroy({ where: { token: refreshToken } });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        await RefreshToken.destroy({ where: { userId: decoded.userId } });
 
-        if (deletedToken) {
-            res.json({ message: 'Sesión cerrada exitosamente' });
-        } else {
-            res.status(404).json({ message: 'Token de actualización no encontrado' });
-        }
+        res.json({ message: 'Cierre de sesión exitoso' });
     } catch (error) {
         console.error('Error en /logout:', error);
-        res.status(500).json({ message: 'Error en el servidor', error: error.message });
+        res.status(500).json({ message: 'Error al cerrar sesión', error: error.message });
+    }
+});
+
+
+// Solicitar restablecimiento de contraseña
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ where: { username: email } });
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado.' });
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiry = new Date(Date.now() + 3600000); // Expira en 1 hora
+
+        await PasswordResetToken.create({
+            userId: user.id,
+            token,
+            expiresAt: expiry,
+        });
+
+        const resetLink = `${process.env.RESET_PASSWORD_URL}?token=${token}`;
+        await sendPasswordResetEmail(email, resetLink);
+
+        res.status(200).json({ message: 'Correo de restablecimiento enviado.' });
+    } catch (error) {
+        console.error('Error en /forgot-password:', error);
+        res.status(500).json({ message: 'Error al procesar la solicitud.' });
+    }
+});
+
+// Restablecer contraseña
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    try {
+        const resetToken = await PasswordResetToken.findOne({ where: { token } });
+        if (!resetToken || resetToken.expiresAt < new Date()) {
+            return res.status(400).json({ message: 'El enlace ha expirado o es inválido.' });
+        }
+
+        const user = await User.findByPk(resetToken.userId);
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado.' });
+
+        user.password = newPassword; // Aquí deberías usar bcrypt para hashear la contraseña
+        await user.save();
+
+        await resetToken.destroy(); // Borra el token usado
+        res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
+    } catch (error) {
+        console.error('Error en /reset-password:', error);
+        res.status(500).json({ message: 'Error al restablecer la contraseña.' });
     }
 });
 

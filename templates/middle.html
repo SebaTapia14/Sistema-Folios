@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opciones de Folios - Oficina de Parte de Dirección</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        .role-indicator {
+            font-size: 1.1em;
+            color: #555;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón de Cerrar Sesión -->
+    <button id="logoutButton" class="btn btn-danger logout-btn">Cerrar Sesión</button>
+
+    <div class="container text-center my-5">
+        <h2>Opciones de Folios</h2>
+        <p class="role-indicator">Rol: Oficina de Parte de Dirección</p>
+        <p>Elige una de las siguientes opciones:</p>
+        
+        <div class="d-grid gap-2 col-6 mx-auto my-4">
+            <!-- Botón para Crear Folio -->
+            <button id="createFolioBtn" class="btn btn-primary btn-lg">Crear Folio</button>
+
+            <!-- Botón para Visualizar Folio -->
+            <button id="viewFoliosBtn" class="btn btn-secondary btn-lg">Visualizar Folios</button>
+        </div>
+    </div>
+
+    <script src="js/middle.js"></script>
+    <script>
+        // Lógica para cerrar sesión
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>
