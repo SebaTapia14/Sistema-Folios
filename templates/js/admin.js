@@ -274,7 +274,20 @@ function renderUsers(users) {
         return;
     }
 
+    // Limpia el contenido previo de la tabla
     userList.innerHTML = '';
+
+    // Si no hay usuarios en la página actual
+    if (users.length === 0) {
+        userList.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center">No hay usuarios registrados en esta página</td>
+            </tr>
+        `;
+        return;
+    }
+
+    // Generar solo filas para los usuarios reales
     users.forEach(user => {
         userList.innerHTML += `
             <tr>

@@ -33,7 +33,7 @@ app.use(express.json());
 // Ruta básica de prueba para el servidor
 app.get('/', (req, res) => res.send('¡Servidor de Sistema de Folios funcionando!'));
 
-// Conectar y sincronizar la base de datos
+/* Conectar y sincronizar la base de datos
 (async () => {
     try {
         await sequelize.authenticate();
@@ -50,7 +50,27 @@ app.get('/', (req, res) => res.send('¡Servidor de Sistema de Folios funcionando
     } catch (error) {
         console.error('Error al conectar o sincronizar la base de datos:', error);
     }
+})();  */
+
+// Conectar y sincronizar la base de datos
+(async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('Conectado a la base de datos MySQL');
+        
+        // Sincronización en producción: Solo conecta, sin alterar ni sincronizar automáticamente
+        if (process.env.NODE_ENV === 'production') {
+            console.log('Entorno de producción: no se realiza sincronización automática.');
+        } else {
+            // Opcional: Solo para desarrollo o configuración inicial
+            await sequelize.sync({ alter: true });
+            console.log('Tablas sincronizadas en desarrollo con alteraciones.');
+        }
+    } catch (error) {
+        console.error('Error al conectar o sincronizar la base de datos:', error);
+    }
 })();
+
 
 // Configuración de Rutas
 app.use('/auth', authRoutes);
