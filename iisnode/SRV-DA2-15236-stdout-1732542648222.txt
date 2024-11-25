@@ -1,0 +1,18 @@
+Servidor corriendo en http://localhost:\\.\pipe\a7ea3747-f8f9-42ad-b878-5227bc03d868
+Conectado a la base de datos MySQL
+Conectado a la base de datos MySQL
+Entorno de producción: no se realiza sincronización automática.
+Rol del usuario: admin
+Roles permitidos: [ 'admin' ]
+Rol del usuario: admin
+Roles permitidos: [ 'admin' ]
+Rol del usuario: admin
+Roles permitidos: [
+  'admin',
+  'oficina de partes municipal',
+  'oficina de partes direccion'
+]
+Rol del usuario: admin
+Roles permitidos: [ 'admin' ]
+Rol del usuario: admin
+Roles permitidos: [ 'admin', 'oficina de partes municipal' ]
