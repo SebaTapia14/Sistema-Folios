@@ -1,0 +1,20 @@
+(node:9196) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Error en el servidor: [Error: ENOENT: no such file or directory, stat 'C:\Sistema-Folios\templates\404.html'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Sistema-Folios\\templates\\404.html',
+  expose: false,
+  statusCode: 404,
+  status: 404
+}
+Error en el servidor: [Error: ENOENT: no such file or directory, stat 'C:\Sistema-Folios\templates\404.html'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: 'C:\\Sistema-Folios\\templates\\404.html',
+  expose: false,
+  statusCode: 404,
+  status: 404
+}

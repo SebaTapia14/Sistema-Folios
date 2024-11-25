@@ -1,0 +1,4 @@
+Servidor corriendo en http://localhost:\\.\pipe\288fcf06-e8ef-469e-9b76-222d55d5317a
+Conectado a la base de datos MySQL
+Conectado a la base de datos MySQL
+Entorno de producción: no se realiza sincronización automática.

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.4.130.176";
 
 document.addEventListener("DOMContentLoaded", () => {
     const folioForm = document.getElementById("folioForm");
@@ -247,7 +247,7 @@ async function loadUserInfo() {
 // Llamar a la función al cargar la página
 async function loadUserInfo() {
     try {
-        const response = await fetch("http://localhost:3000/auth/user-info", {
+        const response = await fetch("http://10.4.130.176/auth/user-info", {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("accessToken")}`
             }
@@ -269,7 +269,7 @@ async function loadUserInfo() {
 }
 
 async function testAuthUserInfo() {
-    const response = await fetch("http://localhost:3000/auth/user-info", {
+    const response = await fetch("http://10.4.130.176/auth/user-info", {
         headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` }
     });
     const data = await response.json();

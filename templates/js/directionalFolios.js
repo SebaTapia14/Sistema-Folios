@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000"; // Ajusta la URL según tu configuración
+const API_BASE_URL = "http://10.4.130.176"; // Ajusta la URL según tu configuración
 
 document.addEventListener("DOMContentLoaded", async () => {
     const folioForm = document.getElementById("folioForm");

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.4.130.176";
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUsers(1);
@@ -25,7 +25,7 @@ let currentUserId = null;
 
 // Manejo de solicitudes con token de autorización
 async function fetchWithAuth(endpoint, options = {}) {
-    const API_BASE_URL = "http://localhost:3000"; // Asegúrate de que esta variable esté definida
+    const API_BASE_URL = "http://10.4.130.176";; // Asegúrate de que esta variable esté definida
     let accessToken = localStorage.getItem('accessToken');
 
     let response = await fetch(`${API_BASE_URL}${endpoint}`, {

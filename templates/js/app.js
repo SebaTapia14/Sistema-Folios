@@ -1,6 +1,6 @@
 // templates/js/app.js
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.4.130.176";
 
 // Inicializar lógica de la aplicación al cargar el DOM
 document.addEventListener("DOMContentLoaded", () => {

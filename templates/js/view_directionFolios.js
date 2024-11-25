@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.4.130.176";
 let currentPage = 1;
 const limit = 20;
 
